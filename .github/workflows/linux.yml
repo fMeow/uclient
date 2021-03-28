@@ -81,31 +81,31 @@ jobs:
           command: test
           args: --features=async_reqwest --all --no-fail-fast -- --nocapture
 
-      - name: check build (async reqwest tls)
+      - name: check build (async reqwest rustls)
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features=async_reqwest_tls --all --bins --examples --tests
+          args: --features=async_reqwest_rustls --all --bins --examples --tests
 
-      - name: tests (async reqwest tls)
+      - name: tests (async reqwest rustls)
         uses: actions-rs/cargo@v1
         timeout-minutes: 40
         with:
           command: test
-          args: --features=async_reqwest_tls --all --no-fail-fast -- --nocapture
+          args: --features=async_reqwest_rustls --all --no-fail-fast -- --nocapture
 
-      - name: check build (blocking reqwest tls)
+      - name: check build (blocking reqwest rustls)
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features=blocking_reqwest_tls --all --bins --examples --tests
+          args: --features=blocking_reqwest_rustls --all --bins --examples --tests
 
-      - name: tests (blocking reqwest tls)
+      - name: tests (blocking reqwest rustls)
         uses: actions-rs/cargo@v1
         timeout-minutes: 40
         with:
           command: test
-          args: --features=blocking_reqwest_tls --all --no-fail-fast -- --nocapture
+          args: --features=blocking_reqwest_rustls --all --no-fail-fast -- --nocapture
   doc:
     runs-on: ubuntu-latest
     steps:
