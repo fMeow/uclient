@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1](https://github.com/fMeow/uclient/compare/v0.1.0...v0.1.1) (2021-05-01)
+
+
+### Bug Fixes
+
+* surf client response header ([379c5a5](https://github.com/fMeow/uclient/commit/379c5a5f88cb7dfcda88ebd135511564a727b248))
+
 ## 0.1.0 (2021-03-28)
 
 
