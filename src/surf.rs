@@ -7,6 +7,7 @@ use http::{
 };
 
 use crate::{ClientError, ClientExt};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct SurfClient {
@@ -71,17 +72,6 @@ impl ClientExt for SurfClient {
 
         let status_code = resp.status();
         let status = u16::from(status_code);
-        let mut headers = HeaderMap::new();
-        let conv_header = |hn: HeaderName| -> HeaderValue {
-            let v = resp
-                .header(&SurfHeaderName::from_str(hn.as_str()).unwrap())
-                .unwrap();
-            let mut iter = v.iter();
-            let acc = iter.next().map(|v| v.as_str()).unwrap_or("").to_owned();
-            let s = iter.fold(acc, |acc, x| format!("{};{}", acc, x.as_str()));
-            s.parse().unwrap()
-        };
-        headers.insert(CONTENT_LENGTH, conv_header(CONTENT_LENGTH));
 
         let version = resp.version();
         let content = resp
@@ -90,9 +80,11 @@ impl ClientExt for SurfClient {
             .map_err(|e| ClientError::HttpClient(format!("{:?}", e)))?;
 
         let mut build = http::Response::builder();
-
-        for header in headers.iter() {
-            build = build.header(header.0, header.1);
+        for (name, value) in resp.iter() {
+            let mut iter = value.iter();
+            let acc = iter.next().map(|v| v.as_str()).unwrap_or("").to_owned();
+            let s = iter.fold(acc, |acc, x| format!("{};{}", acc, x.as_str()));
+            build = build.header(name.as_str(), s);
         }
 
         let http_version = version.map(|v| match v {
