@@ -18,7 +18,8 @@ async_reqwest = [ "reqwest/default-tls" ]
 async_reqwest_rustls = [ "reqwest/rustls-tls" ]
 blocking_reqwest = [ "reqwest/blocking", "reqwest/default-tls", "blocking" ]
 blocking_reqwest_rustls = [ "reqwest/blocking", "reqwest/rustls-tls", "blocking" ]
-async_surf = [ "surf" ]
+async_surf = [ "surf/default" ]
+async_surf_rustls = [ "surf/h1-client-rustls", "surf/middleware-logger", "surf/encoding" ]
 
 [dependencies]
 url = "2"
