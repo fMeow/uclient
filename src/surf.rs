@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use http::{
     header::{HeaderMap, HeaderName, HeaderValue, CONTENT_LENGTH},
-    Method, StatusCode, Version,
+    Method, Request, Response, StatusCode, Version,
 };
 
 use crate::{ClientError, ClientExt};
@@ -29,10 +29,10 @@ impl ClientExt for SurfClient {
         &mut self.headers
     }
 
-    async fn request(
+    async fn request_bytes(
         &self,
-        request: http::Request<String>,
-    ) -> Result<http::Response<String>, ClientError> {
+        request: Request<Vec<u8>>,
+    ) -> Result<Response<String>, ClientError> {
         use ::surf::http::headers::HeaderName as SurfHeaderName;
 
         let method = request.method().clone();

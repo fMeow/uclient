@@ -121,5 +121,11 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
 
-    async fn request(&self, request: Request<String>) -> Result<Response<String>, ClientError>;
+    async fn request(&self, request: Request<String>) -> Result<Response<String>, ClientError> {
+        self.request_bytes(request.map(|b| b.into_bytes())).await
+    }
+    async fn request_bytes(
+        &self,
+        request: Request<Vec<u8>>,
+    ) -> Result<Response<String>, ClientError>;
 }

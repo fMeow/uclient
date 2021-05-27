@@ -10,7 +10,7 @@ use ::reqwest::Client;
 use http::header::HeaderMap;
 
 use crate::{ClientError, ClientExt};
-use http::HeaderValue;
+use http::{HeaderValue, Request, Response};
 
 #[derive(Debug, Clone)]
 pub struct ReqwestClient {
@@ -37,10 +37,10 @@ impl ClientExt for ReqwestClient {
         &mut self.headers
     }
 
-    async fn request(
+    async fn request_bytes(
         &self,
-        mut request: http::Request<String>,
-    ) -> Result<http::Response<String>, ClientError> {
+        mut request: Request<Vec<u8>>,
+    ) -> Result<Response<String>, ClientError> {
         let headers = request.headers_mut();
         for (header, value) in self.headers.iter() {
             if !headers.contains_key(header) {
