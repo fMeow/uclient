@@ -35,7 +35,7 @@ compile_error!(r#"Enabling both async and blocking version of reqwest client is 
     feature = "blocking_reqwest_rustls"
 ))]
 pub mod reqwest;
-#[cfg(any(feature = "async_surf"))]
+#[cfg(any(feature = "async_surf", feature = "async_surf_rustls"))]
 pub mod surf;
 
 #[maybe_async::maybe_async]
