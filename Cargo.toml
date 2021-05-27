@@ -1,6 +1,6 @@
 [package]
 name = "uclient"
-version = "0.1.1"
+version = "0.1.2"
 authors = [ "Guoli Lyu <guoli-lv@hotmail.com>" ]
 edition = "2018"
 readme = "README.md"
@@ -19,7 +19,11 @@ async_reqwest_rustls = [ "reqwest/rustls-tls" ]
 blocking_reqwest = [ "reqwest/blocking", "reqwest/default-tls", "blocking" ]
 blocking_reqwest_rustls = [ "reqwest/blocking", "reqwest/rustls-tls", "blocking" ]
 async_surf = [ "surf/default" ]
-async_surf_rustls = [ "surf/h1-client-rustls", "surf/middleware-logger", "surf/encoding" ]
+async_surf_rustls = [
+  "surf/h1-client-rustls",
+  "surf/middleware-logger",
+  "surf/encoding"
+]
 
 [dependencies]
 url = "2"

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/fMeow/uclient/compare/v0.1.1...v0.1.2) (2021-05-27)
+
+
+### Features
+
+* add async_surf_rustls ([2b5931c](https://github.com/fMeow/uclient/commit/2b5931cce41610deb9f54dd2fe476f025edc8457))
+
 ### [0.1.1](https://github.com/fMeow/uclient/compare/v0.1.0...v0.1.1) (2021-05-01)
 
 
