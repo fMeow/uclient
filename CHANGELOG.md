@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/fMeow/uclient/compare/v0.1.3...v0.1.4) (2021-05-27)
+
+
+### Features
+
+* request_bytes ([ff530e2](https://github.com/fMeow/uclient/commit/ff530e21849b598cf325a6e730e543da99cad057))
+
 ### [0.1.3](https://github.com/fMeow/uclient/compare/v0.1.2...v0.1.3) (2021-05-27)
 
 
