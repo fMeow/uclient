@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/fMeow/uclient/compare/v0.1.4...v0.2.0) (2021-05-28)
+
+
+### Features
+
+* multipart support, send read object ([323611e](https://github.com/fMeow/uclient/commit/323611eaab6277e2011b2ce1b04c8a2b7cbdd85d))
+
+
+### Bug Fixes
+
+* add uclient::Client ([7ec95ef](https://github.com/fMeow/uclient/commit/7ec95efefb51cc78589f2a22aed2857c75be0298))
+
 ### [0.1.4](https://github.com/fMeow/uclient/compare/v0.1.3...v0.1.4) (2021-05-27)
 
 

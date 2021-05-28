@@ -1,6 +1,6 @@
 [package]
 name = "uclient"
-version = "0.1.4"
+version = "0.2.0"
 authors = [ "Guoli Lyu <guoli-lv@hotmail.com>" ]
 edition = "2018"
 readme = "README.md"
@@ -34,28 +34,28 @@ maybe-async = "0.2"
 async-trait = "0.1"
 thiserror = "1"
 
-[dependencies.concat-reader]
-version = "0.1"
-optional = true
+  [dependencies.concat-reader]
+  version = "0.1"
+  optional = true
 
-[dependencies.mime_multipart]
-version = "0.6"
-optional = true
+  [dependencies.mime_multipart]
+  version = "0.6"
+  optional = true
 
-[dependencies.mime]
-version = "0.2"
-optional = true
+  [dependencies.mime]
+  version = "0.2"
+  optional = true
 
-[dependencies.hyper]
-version = "0.10"
-default-features = false
-optional = true
+  [dependencies.hyper]
+  version = "0.10"
+  default-features = false
+  optional = true
 
-[dependencies.bytes]
-version = "1"
-optional = true
+  [dependencies.bytes]
+  version = "1"
+  optional = true
 
-[dependencies.reqwest]
+  [dependencies.reqwest]
   version = "0.11"
   default-features = false
   features = [ "gzip", "stream" ]
