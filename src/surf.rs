@@ -2,12 +2,12 @@
 use std::str::FromStr;
 
 use http::{
-    header::{HeaderMap, HeaderName, HeaderValue, CONTENT_LENGTH},
+    header::{HeaderMap, HeaderValue},
     Method, Request, Response, StatusCode, Version,
 };
 
-use crate::{ClientError, ClientExt};
-use std::collections::HashMap;
+use crate::{ClientExt, Error};
+use std::io::{BufReader, Read};
 
 #[derive(Debug, Clone)]
 pub struct SurfClient {
@@ -16,7 +16,7 @@ pub struct SurfClient {
 
 #[async_trait::async_trait]
 impl ClientExt for SurfClient {
-    fn new<U: Into<Option<HeaderMap>>>(headers: U) -> Result<Self, ClientError> {
+    fn new<U: Into<Option<HeaderMap>>>(headers: U) -> Result<Self, Error> {
         let headers = match headers.into() {
             Some(h) => h,
             None => HeaderMap::new(),
@@ -29,15 +29,14 @@ impl ClientExt for SurfClient {
         &mut self.headers
     }
 
-    async fn request_bytes(
-        &self,
-        request: Request<Vec<u8>>,
-    ) -> Result<Response<String>, ClientError> {
+    async fn request_reader<T>(&self, request: Request<T>) -> Result<Response<String>, Error>
+    where
+        T: Read + Send + Sync + 'static,
+    {
         use ::surf::http::headers::HeaderName as SurfHeaderName;
 
         let method = request.method().clone();
         let url = request.uri().to_owned().to_string();
-        let text = request.body();
 
         let req = match method {
             Method::GET => ::surf::get(url),
@@ -49,7 +48,7 @@ impl ClientExt for SurfClient {
             Method::HEAD => ::surf::head(url),
             Method::OPTIONS => ::surf::options(url),
             Method::TRACE => ::surf::trace(url),
-            m @ _ => return Err(ClientError::HttpClient(format!("invalid method {}", m))),
+            m @ _ => return Err(Error::HttpClient(format!("invalid method {}", m))),
         };
 
         let req = self.headers.iter().fold(req, |req, (k, v)| {
@@ -65,10 +64,13 @@ impl ClientExt for SurfClient {
             )
         });
 
+        let text = request.into_body();
+        let body =
+            surf::Body::from_reader(futures::io::AllowStdIo::new(BufReader::new(text)), None);
         let mut resp = req
-            .body(text.to_owned())
+            .body(body)
             .await
-            .map_err(|e| ClientError::HttpClient(format!("{:?}", e)))?;
+            .map_err(|e| Error::HttpClient(format!("{:?}", e)))?;
 
         let status_code = resp.status();
         let status = u16::from(status_code);
@@ -77,7 +79,7 @@ impl ClientExt for SurfClient {
         let content = resp
             .body_string()
             .await
-            .map_err(|e| ClientError::HttpClient(format!("{:?}", e)))?;
+            .map_err(|e| Error::HttpClient(format!("{:?}", e)))?;
 
         let mut build = http::Response::builder();
         for (name, value) in resp.iter() {
@@ -102,6 +104,6 @@ impl ClientExt for SurfClient {
             resp = resp.version(http_version.unwrap());
         }
         resp.body(content)
-            .map_err(|e| ClientError::HttpClient(format!("{:?}", e)))
+            .map_err(|e| Error::HttpClient(format!("{:?}", e)))
     }
 }

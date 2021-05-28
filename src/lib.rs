@@ -16,9 +16,12 @@
 use http::{HeaderMap, Request, Response};
 use url::Url;
 
-pub use error::ClientError;
+pub use error::Error;
+use std::io::{BufReader, Read};
 
 mod error;
+#[cfg(feature = "multipart")]
+pub mod form;
 
 #[cfg(any(
     all(feature = "async_reqwest", feature = "blocking_reqwest"),
@@ -40,12 +43,12 @@ pub mod surf;
 
 #[maybe_async::maybe_async]
 pub trait ClientExt: Sync + Clone {
-    fn new<U: Into<Option<HeaderMap>>>(headers: U) -> Result<Self, ClientError>;
+    fn new<U: Into<Option<HeaderMap>>>(headers: U) -> Result<Self, Error>;
 
     fn headers(&mut self) -> &mut HeaderMap;
 
     #[inline]
-    async fn get<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn get<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -53,7 +56,7 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
     #[inline]
-    async fn post<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn post<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -61,7 +64,7 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
     #[inline]
-    async fn put<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn put<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -69,7 +72,7 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
     #[inline]
-    async fn delete<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn delete<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -77,7 +80,7 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
     #[inline]
-    async fn patch<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn patch<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -86,7 +89,7 @@ pub trait ClientExt: Sync + Clone {
     }
 
     #[inline]
-    async fn connect<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn connect<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -95,7 +98,7 @@ pub trait ClientExt: Sync + Clone {
     }
 
     #[inline]
-    async fn head<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn head<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -104,7 +107,7 @@ pub trait ClientExt: Sync + Clone {
     }
 
     #[inline]
-    async fn options<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn options<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -113,7 +116,7 @@ pub trait ClientExt: Sync + Clone {
     }
 
     #[inline]
-    async fn trace<T>(&self, url: Url, text: T) -> Result<Response<String>, ClientError>
+    async fn trace<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -121,11 +124,16 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
 
-    async fn request(&self, request: Request<String>) -> Result<Response<String>, ClientError> {
+    async fn request(&self, request: Request<String>) -> Result<Response<String>, Error> {
         self.request_bytes(request.map(|b| b.into_bytes())).await
     }
-    async fn request_bytes(
-        &self,
-        request: Request<Vec<u8>>,
-    ) -> Result<Response<String>, ClientError>;
+
+    async fn request_bytes(&self, request: Request<Vec<u8>>) -> Result<Response<String>, Error> {
+        let req = request.map(|b| BufReader::new(std::io::Cursor::new(b)));
+        self.request_reader(req).await
+    }
+
+    async fn request_reader<T>(&self, request: Request<T>) -> Result<Response<String>, Error>
+    where
+        T: Read + Send + Sync + 'static;
 }
