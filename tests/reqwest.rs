@@ -3,6 +3,7 @@ use http::Request;
 use serde_json::Value;
 use std::fs::File;
 use std::io::Write;
+use uclient::ClientExt;
 
 #[maybe_async::test(
     any(feature = "blocking_reqwest", feature = "blocking_reqwest_rustls"),
