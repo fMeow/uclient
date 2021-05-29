@@ -26,7 +26,6 @@ blocking_reqwest_rustls = [ "reqwest/blocking", "reqwest/rustls-tls", "blocking"
 async_surf = [ "surf/default", "futures" ]
 async_surf_rustls = [
   "surf/h1-client-rustls",
-  "surf/middleware-logger",
   "surf/encoding",
   "futures"
 ]
