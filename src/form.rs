@@ -1,6 +1,6 @@
 use concat_reader::ConcatRead;
 use http::header::HeaderMap;
-use mime_multipart::{get_multipart_boundary, Error, Node, Part};
+use mime_multipart::{generate_boundary, get_multipart_boundary, Node, Part};
 use std::fs::File;
 use std::io::{BufReader, Cursor, Read};
 use std::path::{Path, PathBuf};
@@ -8,8 +8,7 @@ use std::path::{Path, PathBuf};
 pub fn multipart_to_read(
     boundary: Vec<u8>,
     nodes: Vec<Node>,
-) -> Result<impl ConcatRead + Send + Sync, Error> {
-    // let out = BufReader::new(b"--".into_iter().chain(boundary.clone().into_iter()));
+) -> Result<impl ConcatRead + Send + Sync, crate::Error> {
     let mut readers: Vec<Box<dyn Read + Send + Sync>> = vec![];
 
     for node in nodes {
@@ -53,7 +52,9 @@ pub fn multipart_to_read(
                 readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
 
                 // write out the files's content
-                let file = BufReader::new(File::open(&filepart.path)?);
+                let file = BufReader::new(
+                    File::open(&filepart.path).map_err(|_| crate::Error::InvalidFile)?,
+                );
                 readers.push(Box::new(file));
             }
             Node::Multipart((headers, subnodes)) => {
@@ -91,6 +92,8 @@ pub fn multipart_to_read(
     Ok(reader)
 }
 
+/// A file in multipart
+///
 /// A file that is to be inserted into a `multipart/*` or alternatively an uploaded file that
 /// was received as part of `multipart/*` parsing.
 #[derive(Clone, Debug, PartialEq)]
@@ -128,12 +131,13 @@ impl Into<mime_multipart::FilePart> for FilePart {
     }
 }
 
-/// Copyright © 2015 by Michael Dilger (of New Zealand)
-/// This struct is licensed under the MIT license (see LICENSE-MIT for details)
-///
 /// The extracted text fields and uploaded files from a `multipart/form-data` request.
 ///
 /// Use `parse_multipart` to devise this object from a request.
+///
+/// Copyright © 2015 by Michael Dilger (of New Zealand)
+///
+/// This struct is licensed under the MIT license
 #[derive(Clone, Debug, PartialEq)]
 pub struct FormData {
     /// Name-value pairs for plain text fields. Technically, these are form data parts with no
