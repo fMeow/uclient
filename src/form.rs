@@ -5,56 +5,72 @@ use std::fs::File;
 use std::io::{BufReader, Cursor, Read};
 use std::path::{Path, PathBuf};
 
+fn prepare_u8s(
+    content: Vec<u8>,
+    count: &mut usize,
+    readers: &mut Vec<Box<dyn Read + Send + Sync>>,
+) {
+    *count += content.len();
+    readers.push(Box::new(Cursor::new(content)));
+}
+
+/// convert a multipart node to an `std::io::Read` and the bytes count
 pub fn multipart_to_read(
     boundary: Vec<u8>,
     nodes: Vec<Node>,
-) -> Result<impl ConcatRead + Send + Sync, crate::Error> {
+) -> Result<(usize, impl ConcatRead + Send + Sync), crate::Error> {
+    let mut count: usize = 0;
     let mut readers: Vec<Box<dyn Read + Send + Sync>> = vec![];
 
     for node in nodes {
         // write a boundary
-        readers.push(Box::new(Cursor::new(b"--".to_vec())));
-        readers.push(Box::new(Cursor::new(boundary.clone())));
-        readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
+        prepare_u8s(b"--".to_vec(), &mut count, &mut readers);
+        prepare_u8s(boundary.clone(), &mut count, &mut readers);
+        prepare_u8s(b"\r\n".to_vec(), &mut count, &mut readers);
 
         match node {
             Node::Part(part) => {
                 // write the part's headers
                 for header in part.headers.iter() {
-                    readers.push(Box::new(Cursor::new(
-                        header.name().as_bytes().to_vec().into_iter(),
-                    )));
-                    readers.push(Box::new(Cursor::new(b": ".to_vec())));
-                    readers.push(Box::new(Cursor::new(
+                    prepare_u8s(header.name().as_bytes().to_vec(), &mut count, &mut readers);
+                    prepare_u8s(b": ".to_vec(), &mut count, &mut readers);
+                    prepare_u8s(
                         header.value_string().as_bytes().to_vec(),
-                    )));
-                    readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
+                        &mut count,
+                        &mut readers,
+                    );
+                    prepare_u8s(b"\r\n".to_vec(), &mut count, &mut readers);
                 }
 
                 // write the blank line
-                readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
+                prepare_u8s(b"\r\n".to_vec(), &mut count, &mut readers);
 
                 // write the part's content
-                readers.push(Box::new(Cursor::new(part.body)));
+                prepare_u8s(part.body, &mut count, &mut readers);
             }
             Node::File(filepart) => {
                 // write the part's headers
                 for header in filepart.headers.iter() {
-                    readers.push(Box::new(Cursor::new(header.name().as_bytes().to_vec())));
-                    readers.push(Box::new(Cursor::new(b": ".to_vec())));
-                    readers.push(Box::new(Cursor::new(
+                    prepare_u8s(header.name().as_bytes().to_vec(), &mut count, &mut readers);
+                    prepare_u8s(b": ".to_vec(), &mut count, &mut readers);
+                    prepare_u8s(
                         header.value_string().as_bytes().to_vec(),
-                    )));
-                    readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
+                        &mut count,
+                        &mut readers,
+                    );
+                    prepare_u8s(b"\r\n".to_vec(), &mut count, &mut readers);
                 }
 
                 // write the blank line
-                readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
+                prepare_u8s(b"\r\n".to_vec(), &mut count, &mut readers);
 
                 // write out the files's content
-                let file = BufReader::new(
-                    File::open(&filepart.path).map_err(|_| crate::Error::InvalidFile)?,
-                );
+                let f = File::open(&filepart.path).map_err(|_| crate::Error::InvalidFile)?;
+
+                let meta = f.metadata().map_err(|_| crate::Error::InvalidFile)?;
+                count += meta.len() as usize;
+
+                let file = BufReader::new(f);
                 readers.push(Box::new(file));
             }
             Node::Multipart((headers, subnodes)) => {
@@ -63,16 +79,18 @@ pub fn multipart_to_read(
 
                 // write the multipart headers
                 for header in headers.iter() {
-                    readers.push(Box::new(Cursor::new(header.name().as_bytes().to_vec())));
-                    readers.push(Box::new(Cursor::new(b": ".to_vec())));
-                    readers.push(Box::new(Cursor::new(
+                    prepare_u8s(header.name().as_bytes().to_vec(), &mut count, &mut readers);
+                    prepare_u8s(b": ".to_vec(), &mut count, &mut readers);
+                    prepare_u8s(
                         header.value_string().as_bytes().to_vec(),
-                    )));
-                    readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
+                        &mut count,
+                        &mut readers,
+                    );
+                    prepare_u8s(b"\r\n".to_vec(), &mut count, &mut readers);
                 }
 
                 // write the blank line
-                readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
+                prepare_u8s(b"\r\n".to_vec(), &mut count, &mut readers);
 
                 // recurse
                 multipart_to_read(boundary.clone(), subnodes)?;
@@ -80,16 +98,16 @@ pub fn multipart_to_read(
         }
 
         // write a line terminator
-        readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
+        prepare_u8s(b"\r\n".to_vec(), &mut count, &mut readers);
     }
 
     // write a final boundary
-    readers.push(Box::new(Cursor::new(b"--".to_vec())));
-    readers.push(Box::new(Cursor::new(boundary.clone())));
-    readers.push(Box::new(Cursor::new(b"--".to_vec())));
+    prepare_u8s(b"--".to_vec(), &mut count, &mut readers);
+    prepare_u8s(boundary.clone(), &mut count, &mut readers);
+    prepare_u8s(b"--".to_vec(), &mut count, &mut readers);
 
     let reader = concat_reader::concat(readers);
-    Ok(reader)
+    Ok((count, reader))
 }
 
 /// A file in multipart
@@ -203,90 +221,10 @@ impl FormData {
 
         Ok(nodes)
     }
-    /// Into an object with `std::io::Read`
-    pub fn into_reader(self) -> Result<impl ConcatRead + Send + Sync, crate::Error> {
+    /// Return bytes count and a object of `std::io::Read`
+    pub fn into_reader(self) -> Result<(usize, impl ConcatRead + Send + Sync), crate::Error> {
         let nodes = self.to_multipart()?;
         let boundary = generate_boundary();
-        let mut readers: Vec<Box<dyn Read + Send + Sync>> = vec![];
-
-        for node in nodes {
-            // write a boundary
-            readers.push(Box::new(Cursor::new(b"--".to_vec())));
-            readers.push(Box::new(Cursor::new(boundary.clone())));
-            readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
-
-            match node {
-                Node::Part(part) => {
-                    // write the part's headers
-                    for header in part.headers.iter() {
-                        readers.push(Box::new(Cursor::new(
-                            header.name().as_bytes().to_vec().into_iter(),
-                        )));
-                        readers.push(Box::new(Cursor::new(b": ".to_vec())));
-                        readers.push(Box::new(Cursor::new(
-                            header.value_string().as_bytes().to_vec(),
-                        )));
-                        readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
-                    }
-
-                    // write the blank line
-                    readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
-
-                    // write the part's content
-                    readers.push(Box::new(Cursor::new(part.body)));
-                }
-                Node::File(filepart) => {
-                    // write the part's headers
-                    for header in filepart.headers.iter() {
-                        readers.push(Box::new(Cursor::new(header.name().as_bytes().to_vec())));
-                        readers.push(Box::new(Cursor::new(b": ".to_vec())));
-                        readers.push(Box::new(Cursor::new(
-                            header.value_string().as_bytes().to_vec(),
-                        )));
-                        readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
-                    }
-
-                    // write the blank line
-                    readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
-
-                    // write out the files's content
-                    let file = BufReader::new(
-                        File::open(&filepart.path).map_err(|_| crate::Error::InvalidFile)?,
-                    );
-                    readers.push(Box::new(file));
-                }
-                Node::Multipart((headers, subnodes)) => {
-                    // get boundary
-                    let boundary = get_multipart_boundary(&headers)?;
-
-                    // write the multipart headers
-                    for header in headers.iter() {
-                        readers.push(Box::new(Cursor::new(header.name().as_bytes().to_vec())));
-                        readers.push(Box::new(Cursor::new(b": ".to_vec())));
-                        readers.push(Box::new(Cursor::new(
-                            header.value_string().as_bytes().to_vec(),
-                        )));
-                        readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
-                    }
-
-                    // write the blank line
-                    readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
-
-                    // recurse
-                    multipart_to_read(boundary.clone(), subnodes)?;
-                }
-            }
-
-            // write a line terminator
-            readers.push(Box::new(Cursor::new(b"\r\n".to_vec())));
-        }
-
-        // write a final boundary
-        readers.push(Box::new(Cursor::new(b"--".to_vec())));
-        readers.push(Box::new(Cursor::new(boundary.clone())));
-        readers.push(Box::new(Cursor::new(b"--".to_vec())));
-
-        let reader = concat_reader::concat(readers);
-        Ok(reader)
+        multipart_to_read(boundary, nodes)
     }
 }
