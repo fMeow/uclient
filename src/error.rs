@@ -7,7 +7,7 @@ pub enum Error {
     #[cfg(feature = "multipart")]
     #[error("Multipart error: {0}")]
     MultiPart(#[from] mime_multipart::Error),
-    #[error("Invalid file")]
+    #[error("Invalid file. File not found or permission error")]
     InvalidFile,
     #[error("Payload Error")]
     PayloadError,
