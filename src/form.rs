@@ -178,6 +178,10 @@ impl FormData {
             let mut filepart: mime_multipart::FilePart = filepart.clone().into();
             // We leave all headers that the caller specified, except that we rewrite
             // Content-Disposition.
+            if filepart.headers.get::<ContentType>().is_none() {
+                let guess = mime_guess::guess_mime_type(&filepart.path);
+                filepart.headers.set(ContentType(guess));
+            }
             while filepart.headers.remove::<ContentDisposition>() {}
             let filename = match filepart.path.file_name() {
                 Some(fname) => fname.to_string_lossy().into_owned(),

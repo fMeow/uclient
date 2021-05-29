@@ -99,12 +99,6 @@ async fn multipart() {
 
     let mut photo_headers = http::header::HeaderMap::new();
     photo_headers.insert(http::header::CONTENT_TYPE, "image/gif".parse().unwrap());
-    photo_headers.insert(
-        http::header::CONTENT_DISPOSITION,
-        "form-data; name=\"photo\"; filename=\"make.gig\""
-            .parse()
-            .unwrap(),
-    );
 
     let form = FormData {
         fields: vec![
