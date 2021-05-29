@@ -11,9 +11,13 @@ documentation = "https://docs.rs/uclient"
 keywords = [ "HTTP", "client", "universal", "web" ]
 exclude = [ ".gitignore", ".github", "tests/**/*" ]
 
+[package.metadata.docs.rs]
+all-features = true
+features = [ "multipart", "async_reqwest", "async_surf" ]
+
 [features]
 default = [ "multipart" ]
-multipart = [ "mime", "concat-reader", "mime_multipart", "hyper" ]
+multipart = [ "mime", "concat-reader", "mime_multipart", "hyper", "mime_guess" ]
 blocking = [ "maybe-async/is_sync" ]
 async_reqwest = [ "reqwest/default-tls", "futures", "bytes" ]
 async_reqwest_rustls = [ "reqwest/rustls-tls", "futures", "bytes" ]
@@ -38,7 +42,11 @@ thiserror = "1"
   version = "0.1"
   optional = true
 
-  [dependencies.mime_multipart]
+  [dependencies.mime_guess]
+  version = "1"
+  optional = true
+
+[dependencies.mime_multipart]
   version = "0.6"
   optional = true
 
