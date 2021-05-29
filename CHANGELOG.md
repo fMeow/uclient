@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.2](https://github.com/fMeow/uclient/compare/v0.2.1...v0.2.2) (2021-05-29)
+
+
+### Features
+
+* add FormStream ([cc5135d](https://github.com/fMeow/uclient/commit/cc5135df77207034b212458d312c928599ee668c))
+* use Form Stream ([78a2765](https://github.com/fMeow/uclient/commit/78a2765ec7ea5237bbafdce017ee4c7a51c8108d))
+
 ### [0.2.1](https://github.com/fMeow/uclient/compare/v0.2.0...v0.2.1) (2021-05-29)
 
 
