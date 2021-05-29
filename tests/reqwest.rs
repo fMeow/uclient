@@ -108,9 +108,10 @@ async fn multipart() {
         files: vec![("photo".to_owned(), FilePart::new(photo_headers, &tmppath))],
     };
 
-    let boundary = generate_boundary();
-    let multipart = form.to_multipart().unwrap();
-    let (count, reader) = multipart_to_read(boundary.clone(), multipart).unwrap();
+    let stream = form.into_form_stream().unwrap();
+    let boundary = stream.boundary;
+    let reader = stream.reader;
+    let count = stream.count;
 
     let client = Client::new(HeaderMap::new()).unwrap();
     let req = Request::post("https://httpbin.org/post")
