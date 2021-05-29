@@ -97,10 +97,11 @@ async fn multipart() {
 
     let boundary = generate_boundary();
     let multipart = form.to_multipart().unwrap();
-    let reader = multipart_to_read(boundary.clone(), multipart).unwrap();
+    let (count, reader) = multipart_to_read(boundary.clone(), multipart).unwrap();
 
     let client = Client::new(HeaderMap::new()).unwrap();
     let req = Request::post("https://httpbin.org/post")
+        .header(http::header::CONTENT_LENGTH, count)
         .header(
             http::header::CONTENT_TYPE,
             vec![b"multipart/form-data; boundary=".to_vec(), boundary.clone()].concat(),
