@@ -228,3 +228,11 @@ impl FormData {
         multipart_to_read(boundary, nodes)
     }
 }
+
+/// Form stream with boundary, bytes count and a `std::io::Read`
+#[derive(Debug)]
+pub struct FormStream<T: ConcatRead + Send + Sync> {
+    pub boundary: Vec<u8>,
+    pub reader: T,
+    pub count: usize,
+}
