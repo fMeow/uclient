@@ -1,6 +1,6 @@
 [package]
 name = "uclient"
-version = "0.2.0"
+version = "0.2.1"
 authors = [ "Guoli Lyu <guoli-lv@hotmail.com>" ]
 edition = "2018"
 readme = "README.md"
@@ -17,18 +17,20 @@ features = [ "multipart", "async_reqwest", "async_surf" ]
 
 [features]
 default = [ "multipart" ]
-multipart = [ "mime", "concat-reader", "mime_multipart", "hyper", "mime_guess" ]
+multipart = [
+  "mime",
+  "concat-reader",
+  "mime_multipart",
+  "hyper",
+  "mime_guess"
+]
 blocking = [ "maybe-async/is_sync" ]
 async_reqwest = [ "reqwest/default-tls", "futures", "bytes" ]
 async_reqwest_rustls = [ "reqwest/rustls-tls", "futures", "bytes" ]
 blocking_reqwest = [ "reqwest/blocking", "reqwest/default-tls", "blocking" ]
 blocking_reqwest_rustls = [ "reqwest/blocking", "reqwest/rustls-tls", "blocking" ]
 async_surf = [ "surf/default", "futures" ]
-async_surf_rustls = [
-  "surf/h1-client-rustls",
-  "surf/encoding",
-  "futures"
-]
+async_surf_rustls = [ "surf/h1-client-rustls", "surf/encoding", "futures" ]
 
 [dependencies]
 url = "2"
@@ -45,7 +47,7 @@ thiserror = "1"
   version = "1"
   optional = true
 
-[dependencies.mime_multipart]
+  [dependencies.mime_multipart]
   version = "0.6"
   optional = true
 

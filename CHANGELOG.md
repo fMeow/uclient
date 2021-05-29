@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/fMeow/uclient/compare/v0.2.0...v0.2.1) (2021-05-29)
+
+
+### Features
+
+* add method to turn into header ([04ba0bc](https://github.com/fMeow/uclient/commit/04ba0bca6201aac31a5abf2837144770b54ba1da))
+* count bytes count of multipart `Read` object ([787a5f9](https://github.com/fMeow/uclient/commit/787a5f91b67039908bf06026a959e5a9c50c633d))
+* guess mime for file ([1f4583e](https://github.com/fMeow/uclient/commit/1f4583e948511412afe11ba4e7759a722c909cd4))
+* use crate::Error for `multipart_to_read()` ([e695847](https://github.com/fMeow/uclient/commit/e6958472c8a29ebbf05894888ecac6b61fd31433))
+
+
+### Bug Fixes
+
+* test ([5714e44](https://github.com/fMeow/uclient/commit/5714e4468e75a4f8176cc0289469225c072195eb))
+
 ## [0.2.0](https://github.com/fMeow/uclient/compare/v0.1.4...v0.2.0) (2021-05-28)
 
 
