@@ -221,11 +221,16 @@ impl FormData {
 
         Ok(nodes)
     }
-    /// Return bytes count and a object of `std::io::Read`
-    pub fn into_reader(self) -> Result<(usize, impl ConcatRead + Send + Sync), crate::Error> {
+    /// Turn into form stream
+    pub fn into_form_stream(self) -> Result<FormStream<impl ConcatRead>, crate::Error> {
         let nodes = self.to_multipart()?;
         let boundary = generate_boundary();
-        multipart_to_read(boundary, nodes)
+        let (count, reader) = multipart_to_read(boundary.clone(), nodes)?;
+        Ok(FormStream {
+            boundary,
+            reader,
+            count,
+        })
     }
 }
 
