@@ -23,6 +23,20 @@ pub struct ReqwestClient(pub Client, HeaderMap);
 #[cfg(feature = "async_reqwest")]
 #[async_trait::async_trait]
 impl ClientExt for ReqwestClient {
+    type Client = Client;
+
+    fn with_client(
+        client: Self::Client,
+        headers: impl Into<Option<HeaderMap>>,
+    ) -> Result<Self, Error> {
+        let headers = match headers.into() {
+            Some(h) => h,
+            None => HeaderMap::new(),
+        };
+
+        Ok(ReqwestClient(client, headers))
+    }
+
     fn new<U: Into<Option<HeaderMap>>>(headers: U) -> Result<Self, Error> {
         let headers = match headers.into() {
             Some(h) => h,
