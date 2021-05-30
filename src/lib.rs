@@ -43,7 +43,14 @@ pub mod surf;
 
 #[maybe_async::maybe_async]
 pub trait ClientExt: Sync + Clone {
-    fn new<U: Into<Option<HeaderMap>>>(headers: U) -> Result<Self, Error>;
+    type Client;
+
+    fn with_client(
+        client: Self::Client,
+        headers: impl Into<Option<HeaderMap>>,
+    ) -> Result<Self, Error>;
+
+    fn new(headers: impl Into<Option<HeaderMap>>) -> Result<Self, Error>;
 
     fn headers(&mut self) -> &mut HeaderMap;
 
