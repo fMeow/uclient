@@ -11,18 +11,36 @@ use std::io::{BufReader, Read};
 
 #[derive(Debug, Clone)]
 pub struct SurfClient {
+    client: surf::Client,
     headers: HeaderMap,
 }
 
 #[async_trait::async_trait]
 impl ClientExt for SurfClient {
-    fn new<U: Into<Option<HeaderMap>>>(headers: U) -> Result<Self, Error> {
+    type Client = surf::Client;
+
+    fn with_client(
+        client: Self::Client,
+        headers: impl Into<Option<HeaderMap>>,
+    ) -> Result<Self, Error> {
         let headers = match headers.into() {
             Some(h) => h,
             None => HeaderMap::new(),
         };
 
-        Ok(SurfClient { headers })
+        Ok(SurfClient { client, headers })
+    }
+
+    fn new(headers: impl Into<Option<HeaderMap>>) -> Result<Self, Error> {
+        let headers = match headers.into() {
+            Some(h) => h,
+            None => HeaderMap::new(),
+        };
+
+        Ok(SurfClient {
+            client: surf::Client::new(),
+            headers,
+        })
     }
 
     fn headers(&mut self) -> &mut HeaderMap<HeaderValue> {
@@ -39,15 +57,15 @@ impl ClientExt for SurfClient {
         let url = request.uri().to_owned().to_string();
 
         let req = match method {
-            Method::GET => ::surf::get(url),
-            Method::POST => ::surf::post(url),
-            Method::PUT => ::surf::put(url),
-            Method::DELETE => ::surf::delete(url),
-            Method::PATCH => ::surf::patch(url),
-            Method::CONNECT => ::surf::connect(url),
-            Method::HEAD => ::surf::head(url),
-            Method::OPTIONS => ::surf::options(url),
-            Method::TRACE => ::surf::trace(url),
+            Method::GET => self.client.get(url),
+            Method::POST => self.client.post(url),
+            Method::PUT => self.client.put(url),
+            Method::DELETE => self.client.delete(url),
+            Method::PATCH => self.client.patch(url),
+            Method::CONNECT => self.client.connect(url),
+            Method::HEAD => self.client.head(url),
+            Method::OPTIONS => self.client.options(url),
+            Method::TRACE => self.client.trace(url),
             m @ _ => return Err(Error::HttpClient(format!("invalid method {}", m))),
         };
 

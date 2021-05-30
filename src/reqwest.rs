@@ -11,6 +11,7 @@ use http::header::HeaderMap;
 use crate::{ClientExt, Error};
 use http::request::Parts;
 use http::{HeaderValue, Request, Response};
+use reqwest::redirect::Policy;
 use std::io::Read;
 use url::Url;
 
@@ -22,7 +23,20 @@ pub struct ReqwestClient {
 
 #[maybe_async::maybe_async]
 impl ClientExt for ReqwestClient {
-    fn new<U: Into<Option<HeaderMap>>>(headers: U) -> Result<Self, Error> {
+    type Client = Client;
+
+    fn with_client(
+        client: Self::Client,
+        headers: impl Into<Option<HeaderMap>>,
+    ) -> Result<Self, Error> {
+        let headers = match headers.into() {
+            Some(h) => h,
+            None => HeaderMap::new(),
+        };
+        Ok(ReqwestClient { client, headers })
+    }
+
+    fn new(headers: impl Into<Option<HeaderMap>>) -> Result<Self, Error> {
         let client = Client::builder().gzip(true);
         let headers = match headers.into() {
             Some(h) => h,
@@ -30,6 +44,7 @@ impl ClientExt for ReqwestClient {
         };
 
         client
+            .redirect(Policy::none())
             .build()
             .map(|c| ReqwestClient { client: c, headers })
             .map_err(|e| Error::HttpClient(format!("{:?}", e)))
