@@ -13,7 +13,6 @@ use http::request::Parts;
 use http::{HeaderValue, Request, Response};
 use reqwest::redirect::Policy;
 use std::io::Read;
-use url::Url;
 
 #[derive(Debug, Clone)]
 pub struct ReqwestClient {
@@ -108,8 +107,8 @@ where
         headers,
         ..
     } = parts;
-    let url = Url::parse(&uri.to_string()).expect("invalid url");
-    let mut request = reqwest::Request::new(method, url);
+
+    let mut request = reqwest::Request::new(method, uri.to_string().parse().unwrap());
 
     let mut prev_name = None;
     for (key, value) in headers {
@@ -155,8 +154,7 @@ where
         headers,
         ..
     } = parts;
-    let url = Url::parse(&uri.to_string()).expect("invalid url");
-    let mut request = reqwest::blocking::Request::new(method, url);
+    let mut request = reqwest::blocking::Request::new(method, uri.to_string().parse().unwrap());
 
     let mut prev_name = None;
     for (key, value) in headers {

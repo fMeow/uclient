@@ -5,7 +5,6 @@ use futures::StreamExt;
 use http::{HeaderMap, HeaderValue, Method};
 #[cfg(feature = "async_reqwest")]
 use reqwest::{Body, Client};
-use url::Url;
 
 use http::request::Parts;
 use std::convert::TryInto;

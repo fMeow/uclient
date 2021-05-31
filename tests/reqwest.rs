@@ -1,6 +1,7 @@
 use http::HeaderMap;
 use http::Request;
 use serde_json::Value;
+use std::convert::TryFrom;
 use std::fs::File;
 use std::io::Write;
 use uclient::ClientExt;
@@ -18,7 +19,10 @@ async fn get() {
     h.insert("Custom", "Unknown".parse().unwrap());
     let client = Client::new(h).unwrap();
     let res = client
-        .get(url::Url::parse("https://httpbin.org/get").unwrap(), "")
+        .get(
+            http::uri::Uri::try_from("https://httpbin.org/get").unwrap(),
+            "",
+        )
         .await;
     assert_eq!(res.is_ok(), true, "{:?}", res);
 
@@ -57,7 +61,7 @@ async fn post() {
     let client = Client::new(h).unwrap();
     let res = client
         .post(
-            url::Url::parse("https://httpbin.org/post").unwrap(),
+            http::Uri::try_from("https://httpbin.org/post").unwrap(),
             "{\"my\":123}",
         )
         .await;

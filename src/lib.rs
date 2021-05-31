@@ -13,8 +13,7 @@
 //!
 //! But it's possible to incorporate custom ecosystem. See
 //! `examples/custom_client.rs`.
-use http::{HeaderMap, Request, Response};
-use url::Url;
+use http::{uri::Uri, HeaderMap, Request, Response};
 
 pub use error::Error;
 use std::io::{BufReader, Read};
@@ -55,7 +54,7 @@ pub trait ClientExt: Sync + Clone {
     fn headers(&mut self) -> &mut HeaderMap;
 
     #[inline]
-    async fn get<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn get<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -63,7 +62,7 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
     #[inline]
-    async fn post<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn post<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -71,7 +70,7 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
     #[inline]
-    async fn put<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn put<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -79,7 +78,7 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
     #[inline]
-    async fn delete<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn delete<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -87,7 +86,7 @@ pub trait ClientExt: Sync + Clone {
             .await
     }
     #[inline]
-    async fn patch<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn patch<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -96,7 +95,7 @@ pub trait ClientExt: Sync + Clone {
     }
 
     #[inline]
-    async fn connect<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn connect<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -105,7 +104,7 @@ pub trait ClientExt: Sync + Clone {
     }
 
     #[inline]
-    async fn head<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn head<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -114,7 +113,7 @@ pub trait ClientExt: Sync + Clone {
     }
 
     #[inline]
-    async fn options<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn options<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {
@@ -123,7 +122,7 @@ pub trait ClientExt: Sync + Clone {
     }
 
     #[inline]
-    async fn trace<T>(&self, url: Url, text: T) -> Result<Response<String>, Error>
+    async fn trace<T>(&self, url: Uri, text: T) -> Result<Response<String>, Error>
     where
         T: Into<String> + Send,
     {

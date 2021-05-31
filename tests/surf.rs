@@ -13,7 +13,7 @@ async fn get() {
     h.insert("Custom", "Unknown".parse().unwrap());
     let client = Client::new(h).unwrap();
     let res = client
-        .get(url::Url::parse("https://httpbin.org/get").unwrap(), "")
+        .get("https://httpbin.org/get".parse().unwrap(), "")
         .await;
     assert_eq!(res.is_ok(), true, "{:?}", res);
 
@@ -46,10 +46,7 @@ async fn post() {
     // h.insert(http::header::CONTENT_TYPE, http);
     let client = Client::new(h).unwrap();
     let res = client
-        .post(
-            url::Url::parse("https://httpbin.org/post").unwrap(),
-            "{\"my\":123}",
-        )
+        .post("https://httpbin.org/post".parse().unwrap(), "{\"my\":123}")
         .await;
     assert_eq!(res.is_ok(), true, "{:?}", res);
 
